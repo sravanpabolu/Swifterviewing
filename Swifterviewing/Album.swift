@@ -8,6 +8,18 @@
 
 import Foundation
 
-<#ClassOrStruct#> Album {
+struct Album: Codable {
+    let albumID, id: Int?
+    let title: String?
+    let url: String?
+    let thumbnailURL: String?
     
+    enum CodingKeys: String, CodingKey {
+        case albumID = "albumId"
+        case id
+        case title
+        case url
+        case thumbnailURL = "thumbnailUrl"
+    }
 }
+

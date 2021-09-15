@@ -8,17 +8,39 @@
 
 import Foundation
 
-<#ClassOrStruct#> API {
-    let baseURL = "https://jsonplaceholder.typicode.com/"
-    let photosEndpoint = "/photos" //returns photos and their album ID
-    let albumsEndpoint = "/albums" //returns an album, but without photos
-    
-    func getAlbums(callback: (Result<Album, AlbumError>) -> Void) {
+enum AlbumError: Error {
+    case networkError, parseError, urlError
+    case unknownError(errorMessage: String)
+}
+
+struct API {
+    //TODO: Add documentation
+    func getAlbums(for url: String, callback: @escaping (Result<[Album], AlbumError>) -> Void) {
+        
+        guard let url = URL(string: url) else {
+            callback(.failure(.urlError))
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+            if let error = error {
+                callback(.failure(.unknownError(errorMessage: error.localizedDescription)))
+                return
+            }
+            
+            guard let data = data else {
+                callback(.failure(.networkError))
+                return
+            }
+            
+            do {
+                let response = try JSONDecoder().decode([Album].self, from: data)
+                callback(.success(response))
+            } catch {
+                callback(.failure(.parseError))
+            }
+        }
+        task.resume()
     }
 }
 
-extension API {
-    enum AlbumError: Error {
-        case <#SomeRealisticErrorThing#>
-    }
-}
